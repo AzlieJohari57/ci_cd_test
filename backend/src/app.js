@@ -49,6 +49,14 @@ export function createApp() {
     res.json(todo);
   });
 
+  // Must be registered before /api/todos/:id, otherwise "completed" would
+  // be captured as the :id param instead of matching this route.
+  app.delete('/api/todos/completed', (req, res) => {
+    const before = todos.length;
+    todos = todos.filter((t) => !t.done);
+    res.json({ removed: before - todos.length });
+  });
+
   app.delete('/api/todos/:id', (req, res) => {
     const id = Number(req.params.id);
     const index = todos.findIndex((t) => t.id === id);

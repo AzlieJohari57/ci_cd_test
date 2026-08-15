@@ -46,6 +46,17 @@ export default function App() {
     }
   }
 
+  async function handleClearCompleted() {
+    try {
+      await api.clearCompleted();
+      setTodos((prev) => prev.filter((t) => !t.done));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  const hasCompleted = todos.some((t) => t.done);
+
   return (
     <main className="app">
       <h1>Todo CRUD</h1>
@@ -82,6 +93,12 @@ export default function App() {
           </li>
         ))}
       </ul>
+
+      {hasCompleted && (
+        <button className="clear-completed" onClick={handleClearCompleted}>
+          Clear completed
+        </button>
+      )}
     </main>
   );
 }

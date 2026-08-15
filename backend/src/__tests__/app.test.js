@@ -60,4 +60,19 @@ describe('todo API', () => {
     const list = await request(app).get('/api/todos');
     assert.equal(list.body.find((t) => t.id === created.body.id), undefined);
   });
+
+  test('DELETE /api/todos/completed removes only done todos', async () => {
+    const app = createApp();
+    const a = await request(app).post('/api/todos').send({ title: 'Stays' });
+    const b = await request(app).post('/api/todos').send({ title: 'Goes' });
+    await request(app).put(`/api/todos/${b.body.id}`).send({ done: true });
+
+    const res = await request(app).delete('/api/todos/completed');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.removed, 1);
+
+    const list = await request(app).get('/api/todos');
+    assert.ok(list.body.some((t) => t.id === a.body.id));
+    assert.equal(list.body.some((t) => t.id === b.body.id), false);
+  });
 });
