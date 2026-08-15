@@ -42,4 +42,32 @@ describe('App', () => {
 
     expect(await screen.findByText('Write docs')).toBeInTheDocument();
   });
+
+  test('clears completed todos', async () => {
+    mockFetchSequence([
+      {
+        body: [
+          { id: 1, title: 'Done already', done: true },
+          { id: 2, title: 'Still open', done: false },
+        ],
+      },
+      { body: { removed: 1 } },
+    ]);
+    const user = userEvent.setup();
+    render(<App />);
+
+    const clearButton = await screen.findByText('Clear completed');
+    await user.click(clearButton);
+
+    expect(screen.queryByText('Done already')).not.toBeInTheDocument();
+    expect(screen.getByText('Still open')).toBeInTheDocument();
+  });
+
+  test('hides the clear-completed button when nothing is done', async () => {
+    mockFetchSequence([{ body: [{ id: 1, title: 'Still open', done: false }] }]);
+    render(<App />);
+
+    await screen.findByText('Still open');
+    expect(screen.queryByText('Clear completed')).not.toBeInTheDocument();
+  });
 });

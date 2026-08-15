@@ -24,4 +24,5 @@ export const api = {
       body: JSON.stringify(changes),
     }).then(handle),
   remove: (id) => fetch(`${BASE_URL}/${id}`, { method: 'DELETE' }).then(handle),
+  clearCompleted: () => fetch(`${BASE_URL}/completed`, { method: 'DELETE' }).then(handle),
 };
