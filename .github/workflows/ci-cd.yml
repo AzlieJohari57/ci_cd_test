@@ -1,0 +1,97 @@
+name: CI/CD
+
+# CI runs on every push/PR so you get feedback fast.
+# CD (the deploy job) only runs for pushes to main, and only after CI passes.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-ci:
+    name: Backend lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Lint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Test
+        working-directory: backend
+        run: npm test
+
+  frontend-ci:
+    name: Frontend lint, test & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Test
+        working-directory: frontend
+        run: npm test
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      # The build output is uploaded as an artifact so the deploy job can
+      # reuse it without rebuilding — a common pattern in real pipelines.
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  deploy:
+    name: Deploy (simulated)
+    needs: [backend-ci, frontend-ci]
+    # Only deploy from main, and only on a real push (not a PR).
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - name: List what would be deployed
+        run: ls -la dist
+
+      # This is where a real pipeline would push to a host (Render, Fly.io,
+      # a VM, a container registry, etc.) using secrets stored in the repo's
+      # GitHub Actions settings. It's stubbed here so the pipeline runs end
+      # to end without needing any external account.
+      - name: "Deploy (stub)"
+        run: |
+          echo "Deploying backend from ./backend ..."
+          echo "Deploying frontend build from ./dist ..."
+          echo "Deploy complete (simulated) at $(date -u)."

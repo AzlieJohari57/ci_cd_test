@@ -1,0 +1,21 @@
+{
+  "name": "todo-backend",
+  "version": "1.0.0",
+  "description": "Minimal Express CRUD API for the todo app",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint src",
+    "test": "node --test src/__tests__"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "supertest": "^7.0.0"
+  }
+}
